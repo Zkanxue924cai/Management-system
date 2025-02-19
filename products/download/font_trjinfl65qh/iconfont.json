@@ -1,0 +1,23 @@
+{
+  "id": "",
+  "name": "",
+  "font_family": "iconfont",
+  "css_prefix_text": "icon-",
+  "description": "",
+  "glyphs": [
+    {
+      "icon_id": "4542653",
+      "name": "排列方式一",
+      "font_class": "pailiefangshiyi",
+      "unicode": "e657",
+      "unicode_decimal": 58967
+    },
+    {
+      "icon_id": "17982556",
+      "name": "排列方式1-01",
+      "font_class": "pailiefangshi1-01",
+      "unicode": "e640",
+      "unicode_decimal": 58944
+    }
+  ]
+}

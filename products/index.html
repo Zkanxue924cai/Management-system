@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>产品管理</title>
+    <link rel="stylesheet" href="static/index_style.css">
+    <link rel="stylesheet" href="download/font_trjinfl65qh/iconfont.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="toolbar">
+            <div class="left-tools">
+                <div class="view-mode">
+                    <button class="icon-btn list-view active" onclick="window.location.href='index.html'">
+                        <i class="iconfont icon-pailiefangshi1-01"></i>
+                    </button>
+                    <span class="divider">|</span>
+                    <button class="icon-btn grid-view" onclick="window.location.href='index_two.html'">
+                        <i class="iconfont icon-pailiefangshiyi"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="right-tools">
+                <button class="btn btn-danger batch-delete" onclick="bluk_delete()">批量删除</button>
+                <button class="btn btn-primary add-new" onclick="href_add()">新增</button>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th><input type="checkbox" id="selectAll" onchange="all_select()"></th>
+                        <th>产品</th>
+                        <th>产品状态</th>
+                        <th>产品编码</th>
+                        <th>产品名称</th>
+                        <th>产品品类</th>
+                        <th>节点类型</th>
+                        <th>产品类型</th>
+                        <th>接入车系</th>
+                        <th>接入设备数量</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="productTableBody">
+                    <!-- 数据将通过JavaScript动态渲染 -->
+                </tbody>
+            </table>
+        </div>
+        <div class="pag">
+            <div class="pag-left">
+                已选择：<span id="selectedCount">0</span>条数据
+            </div>
+            <div class="pag-right">
+                <div class="goto-page">
+                    前往<input type="number" min="1" id="pageInput">页
+                </div>
+                <div class="pagination">
+                    <button class="btn-page prev-page">上一页</button>
+                    <div class="page-numbers">
+                        <!-- 页码将通过JavaScript动态渲染 -->
+                    </div>
+                    <button class="btn-page next-page">下一页</button>
+                </div>
+                <div class="total-info">
+                    共<span id="totalCount">0</span>条数据
+                    <select class="page-size">
+                        <option value="4">4条/页</option>
+                        <option value="8">8条/页</option>
+                        <option value="10">10条/页</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<script src="../../../axios.min.js"></script>
+<script>
+    // 检查是否登录状态
+    function islogin(){
+        if(!localStorage.getItem('islogin')){
+            alert("请先登录")
+            location.href = 'login.html'
+            return false
+        }
+        return true
+    }
+
+    if(!islogin()) {
+        throw new Error('未登录');
+    }
+
+    // 全局变量
+    let currentPage = 1;
+    let pageSize = 4;
+
+    // 初始化
+    document.addEventListener('DOMContentLoaded', () => {
+        get_data();
+        // 绑定页码输入事件
+        document.getElementById('pageInput').addEventListener('keyup', function(e) {
+            if(e.key === 'Enter') {
+                const page = parseInt(this.value);
+                if(page > 0) jump(page);
+            }
+        });
+        // 绑定每页条数切换事件
+        document.querySelector('.page-size').addEventListener('change', function() {
+            pageSize = parseInt(this.value);
+            get_data(1);
+        });
+    });
+
+    function get_data(page = 1) {
+        currentPage = page;
+        axios.get(`http://localhost:8001/app/index/?page=${page}&page_size=${pageSize}`)
+            .then(res => {
+                render_Data(res.data.data);
+                render_totalCount(res.data.data_count);
+                render_page(res.data.max_page, page);
+            })
+            .catch(err => {
+                console.log(err);
+            });
+    }
+
+    function render_Data(data) {
+        let str = ``
+        data.forEach(i => {
+            str += `
+            <tr>
+                <td><input type="checkbox" id="check" value='${i.id}' onchange="updateSelectedCount()"></td>
+                <td>${i.id}</td>
+                <td><span style="color: ${i.is_up == 0 ? '#ff4d4f' : '#52c41a'}">●</span> ${i.is_up == 0 ? '禁用' : '启用'}</td>
+                <td>${i.encode}</td>
+                <td>${i.name}</td>
+                <td>${i.category}</td>
+                <td>${i.node}</td>
+                <td>${i.type}</td>
+                <td>${i.car}</td>
+                <td>${i.num}</td>
+                <td>
+                    <button class="btn btn-primary" onclick="href_edit(${i.id})">编辑</button>
+                    <button class="btn" id="variation" onclick="variation('${i.id}')">${i.is_up == 0 ? '启用' : '禁用'}</button>
+                    <button class="btn btn-danger" ${i.is_up == 1 ? 'disabled' : ''} onclick="del('${i.id}')">删除</button>
+                </td>
+            </tr>
+        `
+        });
+        document.querySelector('tbody').innerHTML = str
+    }
+
+    // 实现全选功能
+    function all_select(){
+        let all = document.querySelector('#selectAll')
+        let check = document.querySelectorAll('#check')
+        if(all.checked){
+            check.forEach(i=>{
+                i.checked = true
+            })
+        }
+        else{
+            check.forEach(i=>{
+                i.checked = false
+            })
+        }
+        updateSelectedCount() // 添加这行
+    }
+
+    // 添加更新选中数量的函数
+    function updateSelectedCount() {
+        const checkedBoxes = document.querySelectorAll('#check:checked');
+        const totalBoxes = document.querySelectorAll('#check');
+        document.getElementById('selectedCount').textContent = checkedBoxes.length;
+        
+        // 判断是否所有复选框都被选中
+        document.getElementById('selectAll').checked = checkedBoxes.length === totalBoxes.length && totalBoxes.length > 0;
+    }
+
+    // 禁用启用功能
+    function variation(id){
+        axios.patch(`http://localhost:8001/app/index/?id=${id}`)
+        .then(res=>{
+            get_data()
+        })
+        .catch(err=>{
+            console.log(err)
+        })
+    }
+
+    // 删除功能
+    function del(id){
+        axios.delete(`http://localhost:8001/app/index/?id=${id}`)
+        .then(res=>{
+            get_data()
+        })
+        .catch(err=>{
+            console.log(err)
+        })
+    }
+
+    // 跳转新增页面
+    function href_add(){
+        location.href = 'add.html'
+    }
+
+    // 跳转编辑页面
+    function href_edit(id){
+        location.href = `edit.html?id=${id}`
+    }
+
+    // 批量删除按钮
+    function bluk_delete(){
+        let check = document.querySelectorAll('#check:checked')
+        let list = []
+        check.forEach(i=>{
+            list.push(i.value)
+        })
+        let list_id = list.join(',')
+        axios.delete(`http://localhost:8001/app/index/?id=${list_id}`)
+        .then(res=>{
+            get_data()
+        })
+        .catch(err=>{
+            console.log(err)
+        })
+    }
+
+    // 获取总数据条数
+    function render_totalCount(max){
+        document.querySelector('#totalCount').innerHTML = `
+            <span id="totalCount">${max}</span>
+        `
+    }
+
+    // 渲染分页功能
+    function render_page(maxPage, currentPage) {
+        const prevBtn = document.querySelector('.prev-page');
+        const nextBtn = document.querySelector('.next-page');
+        
+        // 设置上一页、下一页按钮状态
+        prevBtn.disabled = currentPage <= 1;
+        nextBtn.disabled = currentPage >= maxPage;
+        
+        // 绑定上一页、下一页按钮事件
+        prevBtn.onclick = () => currentPage > 1 && jump(currentPage - 1);
+        nextBtn.onclick = () => currentPage < maxPage && jump(currentPage + 1);
+
+        // 渲染页码
+        let str = '';
+        for(let i = 1; i <= maxPage; i++) {
+            str += `
+                <button class="btn-page ${i === currentPage ? 'active' : ''}" 
+                        onclick="jump(${i})">${i}</button>
+            `;
+        }
+        document.querySelector('.page-numbers').innerHTML = str;
+    }
+
+    function jump(page) {
+        document.getElementById('pageInput').value = page;
+        get_data(page);
+    }
+</script>
+
+</html>

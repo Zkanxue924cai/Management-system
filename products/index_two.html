@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>产品管理-网格视图</title>
+    <link rel="stylesheet" href="static/index_two_style.css">
+    <link rel="stylesheet" href="download/font_trjinfl65qh/iconfont.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="toolbar">
+            <div class="left-tools">
+                <div class="view-mode">
+                    <button class="icon-btn list-view" onclick="window.location.href='index.html'">
+                        <i class="iconfont icon-pailiefangshi1-01"></i>
+                    </button>
+                    <span class="divider">|</span>
+                    <button class="icon-btn grid-view active" onclick="window.location.href='index_two.html'">
+                        <i class="iconfont icon-pailiefangshiyi"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="right-tools">
+                <button class="btn btn-primary add-new" onclick="href_add()">新增</button>
+            </div>
+        </div>
+
+        <div class="grid-container" id="productGrid">
+            <!-- 数据将通过JavaScript动态渲染 -->
+        </div>
+        <div class="pagination">
+            <button class="btn-page" onclick="changePage('prev')">上一页</button>
+            <span id="currentPage">1</span> / <span id="totalPages">1</span>
+            <button class="btn-page" onclick="changePage('next')">下一页</button>
+        </div>
+    </div>
+
+    <style>
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+            gap: 10px;
+        }
+
+        .btn-page {
+            padding: 5px 15px;
+            border: 1px solid #d9d9d9;
+            background: #fff;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .btn-page:hover {
+            color: #1890ff;
+            border-color: #1890ff;
+        }
+
+        .product-card {
+            width: 100%;
+            margin: 0;
+        }
+    </style>
+
+    <script src="../../../axios.min.js"></script>
+    <script>
+        // 检查是否登录状态
+        function islogin() {
+            if (!localStorage.getItem('islogin')) {
+                alert("请先登录")
+                location.href = 'login.html'
+                return false
+            }
+            return true
+        }
+
+        if (!islogin()) {
+            throw new Error('未登录');
+        }
+
+        let currentPage = 1;
+        const pageSize = 6; // 每页显示6条数据
+        let totalData = [];
+
+        function get_data() {
+            axios.get('http://localhost:8001/app/indextwo/')
+                .then(res => {
+                    totalData = res.data.data;
+                    updatePagination();
+                    renderCurrentPage();
+                })
+                .catch(err => {
+                    console.log(err);
+                });
+        }
+
+        function updatePagination() {
+            const totalPages = Math.ceil(totalData.length / pageSize);
+            document.getElementById('currentPage').textContent = currentPage;
+            document.getElementById('totalPages').textContent = totalPages;
+        }
+
+        function renderCurrentPage() {
+            const start = (currentPage - 1) * pageSize;
+            const end = start + pageSize;
+            const currentData = totalData.slice(start, end);
+            render_Data(currentData);
+        }
+
+        function changePage(direction) {
+            const totalPages = Math.ceil(totalData.length / pageSize);
+            if (direction === 'prev' && currentPage > 1) {
+                currentPage--;
+            } else if (direction === 'next' && currentPage < totalPages) {
+                currentPage++;
+            }
+            updatePagination();
+            renderCurrentPage();
+        }
+
+        function render_Data(data) {
+            let str = ``;
+            data.forEach(i => {
+                str += `
+                <div class="product-card">
+                    <img src="imgs/粉miku.jpg" alt="产品图片" class="product-image">
+                    <div class="product-info">
+                        <div class="product-status">
+                            <span class="status-dot" style="color: ${i.is_up == 0 ? '#ff4d4f' : '#52c41a'}">●</span>
+                            <span>${i.is_up == 0 ? '禁用' : '启用'}</span>
+                        </div>
+                        <div class="product-details">
+                            <div class="detail-item">
+                                <span class="detail-label">产品编码：</span>
+                                <span>${i.encode}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">产品名称：</span>
+                                <span>${i.name}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">产品品类：</span>
+                                <span>${i.category}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">接入设备：</span>
+                                <span>${i.num}</span>
+                            </div>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn btn-primary" onclick="href_edit(${i.id})">编辑</button>
+                            <button class="btn" onclick="variation('${i.id}')">${i.is_up == 0 ? '启用' : '禁用'}</button>
+                            <button class="btn btn-danger" ${i.is_up == 1 ? 'disabled' : ''} onclick="del('${i.id}')">删除</button>
+                        </div>
+                    </div>
+                </div>
+                `
+            });
+            document.getElementById('productGrid').innerHTML = str;
+        }
+
+        // 其他功能函数保持不变
+        function variation(id) {
+            axios.patch(`http://localhost:8001/app/index/?id=${id}`)
+                .then(res => {
+                    get_data()
+                })
+                .catch(err => {
+                    console.log(err)
+                })
+        }
+
+        function del(id) {
+            axios.delete(`http://localhost:8001/app/index/?id=${id}`)
+                .then(res => {
+                    get_data()
+                })
+                .catch(err => {
+                    console.log(err)
+                })
+        }
+
+        function href_add() {
+            location.href = 'add.html'
+        }
+
+        function href_edit(id) {
+            location.href = `edit.html?id=${id}`
+        }
+
+        // 初始化
+        get_data();
+    </script>
+
+</html>

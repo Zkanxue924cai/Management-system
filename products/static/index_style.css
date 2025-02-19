@@ -1,0 +1,308 @@
+.container {
+    padding: 20px;
+}
+
+.toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.left-tools, .right-tools {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.icon-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.3s;
+}
+
+.icon-btn i {
+    font-size: 16px;
+    color: #666;
+}
+
+.icon-btn:hover {
+    background: #e6e6e6;
+}
+
+.icon-btn.active {
+    background: #fff;
+    color: #1890ff;
+}
+
+.icon-btn.active i {
+    color: #1890ff;
+}
+
+.icon-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+.btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: #1890ff;
+    color: white;
+}
+
+.btn-danger {
+    background: #ff4d4f;
+    color: white;
+}
+
+.btn:disabled {
+    background-color: #f5f5f5;
+    color: #d9d9d9;
+    cursor: not-allowed;
+    border: 1px solid #d9d9d9;
+}
+
+.btn-danger:disabled {
+    background-color: #fff1f0;
+    color: #ffccc7;
+    border: 1px solid #ffccc7;
+}
+
+.table-container {
+    overflow-x: auto;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 16px 12px;
+    border: none;
+    text-align: left;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+th {
+    background: #fafafa;
+    font-weight: 600;  /* 修改这里，从500改为600使文字更粗 */
+    color: #262626;
+}
+
+tr:hover {
+    background-color: #fafafa;
+}
+
+tr:last-child td {
+    border-bottom: none;
+}
+
+.actions {
+    display: flex;
+    gap: 8px;
+}
+
+.action-btn {
+    padding: 4px 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+    cursor: pointer;
+}
+
+.action-btn.edit {
+    color: #1890ff;
+}
+
+.action-btn.disable {
+    color: #faad14;
+}
+
+.action-btn.delete {
+    color: #ff4d4f;
+}
+
+.view-mode {
+    display: flex;
+    align-items: center;
+    gap: 2px;  /* 减小间距使分隔符更紧凑 */
+    background: #f5f5f5;
+    padding: 4px;
+    border-radius: 4px;
+}
+
+.divider {
+    color: #d9d9d9;
+    font-size: 14px;
+    padding: 0 2px;
+    user-select: none;
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+.grid-item {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform 0.2s;
+}
+
+.grid-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.item-image {
+    height: 200px;
+    overflow: hidden;
+}
+
+.item-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.item-info {
+    padding: 15px;
+}
+
+.item-title {
+    margin: 0 0 10px 0;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.item-price {
+    color: #e4393c;
+    font-size: 18px;
+    margin: 0 0 15px 0;
+}
+
+.item-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-edit, .btn-delete {
+    padding: 5px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-edit {
+    background-color: #1890ff;
+    color: white;
+}
+
+.btn-delete {
+    background-color: #ff4d4f;
+    color: white;
+}
+
+.pag {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0;
+    margin-top: 20px;
+}
+
+.pag-left {
+    color: #666;
+}
+
+.pag-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.goto-page {
+    display: flex;
+    align-items: center;
+}
+
+.goto-page input {
+    width: 50px;
+    margin: 0 8px;
+    padding: 4px;
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+}
+
+.pagination {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-page {
+    padding: 6px 12px;
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+    background: white;
+    cursor: pointer;
+}
+
+.btn-page:disabled {
+    background: #f5f5f5;
+    cursor: not-allowed;
+}
+
+.page-numbers {
+    display: flex;
+    gap: 8px;
+}
+
+.page-numbers button {
+    min-width: 32px;
+    height: 32px;
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+    background: white;
+    cursor: pointer;
+}
+
+.page-numbers button.active {
+    background: #1890ff;
+    color: white;
+    border-color: #1890ff;
+}
+
+.total-info {
+    color: #666;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.page-size {
+    padding: 4px;
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+}

@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户登录</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #f0f2f5;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
+        .login-container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            width: 380px;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #666;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .captcha-container {
+            display: flex;
+            gap: 10px;
+        }
+        .captcha-input {
+            flex: 1;
+        }
+        .captcha-img {
+            width: 100px;
+            height: 40px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .remember-me {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .remember-me input {
+            margin-right: 5px;
+        }
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: #1890ff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .login-btn:hover {
+            background: #40a9ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2>用户登录</h2>
+            <div class="form-group">
+                <label for="username">用户名</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+            <div class="form-group">
+                <label for="password">密码</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <div class="form-group">
+                <label for="captcha">验证码</label>
+                <div class="captcha-container">
+                    <input type="text" id="captcha" name="captcha" class="captcha-input" required>
+                    <div id="captchaImg" class="captcha-img"></div>
+                </div>
+            </div>
+            <div class="remember-me">
+                <input type="checkbox" id="remember" name="remember">
+                <label for="remember">记住密码</label>
+            </div>
+            <button type="submit" class="login-btn" onclick="login()">登录</button>
+    </div>
+<script src="../../../axios.min.js"></script>
+    <script>
+        // 页面加载完成时执行
+        window.onload = function() {
+            Remember();
+            get_image();
+        }
+
+        function login(){
+            let name = document.getElementById('name').value
+            let password = document.getElementById('password').value
+            let captcha = document.getElementById('captcha').value
+            let captcha_session = sessionStorage.getItem('captcha')
+            let check = document.getElementById('remember').checked
+            
+            body = {
+                'name':name,
+                'password':password,
+                'captcha':captcha,
+                'captcha_session':captcha_session
+            }
+            axios.post(`http://localhost:8001/app/login/`, body)
+            .then(res=>{
+                if(res.data.code == 200){
+                     localStorage.setItem('islogin', 'true');
+                    // 只在登录成功后处理记住密码功能
+                    if (check) {
+                        localStorage.setItem('name', name);
+                        localStorage.setItem('password', password);
+                    } else {
+                        // 如果未勾选记住密码，则清除保存的信息
+                        localStorage.removeItem('name');
+                        localStorage.removeItem('password');
+                        document.getElementById('name').value = '';
+                        document.getElementById('password').value = '';
+                        document.getElementById('captcha').value = '';
+                    }
+                    alert("登录成功")
+                    location.href = 'index.html'
+                }
+                else if(res.data.error == '验证码错误'){
+                    alert("验证码错误")
+                    get_image()
+                }
+                else if(res.data.error == '用户名或密码错误'){
+                    alert("用户名或密码错误")
+                    get_image()
+                }
+            })
+            .catch(err=>{
+                console.log(err)
+                alert("登录失败")
+                get_image()
+            })
+        }
+
+        function Remember(){
+            let name = localStorage.getItem('name');
+            let password = localStorage.getItem('password');
+            
+            // 如果存在存储的用户名和密码，则填充表单
+            if(name && password){
+                document.getElementById('name').value = name;
+                document.getElementById('password').value = password;
+                document.getElementById('remember').checked = true;
+            }
+        }
+
+        function get_image(){
+            axios.get(`http://localhost:8001/app/image/`)
+            .then(res=>{
+                document.getElementById('captchaImg').innerHTML = `<img src="${res.data.image}" style="width: 100%; height: 100%;">`
+                sessionStorage.setItem('captcha', res.data.captcha)
+            })
+            .catch(err=>{
+                console.log(err)
+            })
+        }
+        // 验证码图片区域点击刷新
+        document.getElementById('captchaImg').addEventListener('click', function() {
+            get_image()
+        });
+        
+    </script>
+</body>
+</html>
